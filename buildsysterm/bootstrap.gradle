@@ -1,0 +1,96 @@
+/*
+ * Copyright (C) 2016 Fred Grott(aka shareme GrottWorkShop)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under License.
+ */
+
+//assumes that local dev machine has system env LOCAL_DEV defined
+ext {
+
+    isLocal = 'LOCAL_DEV'
+    isTravis = 'TRAVIS'
+    executingOnCI = !System.getenv(isLocal)
+    executingOnTravis = System.getenv(isTravis)
+}
+
+allprojects {
+    //borrowed from Jake Wharton's gist
+    //https://gist.github.com/JakeWharton/2066f5e4f08fbaaa68fd
+    // ensures we do not ever use wildcards
+    // if lib author has used + wildcard than its
+    // resolutionStrategy.force "group:name:exact_version"
+    afterEvaluate { project ->
+        //noinspection GroovyAssignabilityCheck
+        project.configurations.all {
+
+            resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                //noinspection GroovyAssignabilityCheck
+                def requested = details.target
+                if (requested.version.contains('+')) {
+                    throw new GradleException("Wildcard dependency forbidden: ${requested.group}:${requested.name}:${requested.version}")
+                }
+            }
+
+            //no we cannot put the individual resolutionStrategy.force
+            //declarations here, put them in the individual module
+            //build scripts instead
+
+
+        }
+    }
+    repositories {
+        jcenter()
+        //for getting libs deployed by jitpack
+        maven { url "https://jitpack.io" }
+        // for using snapshots, we use them sparingly
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
+    }
+    tasks.withType(JavaForkOptions) {
+        // Forked processes like GradleWorkerMain for tests won't steal focus!
+        jvmArgs '-Djava.awt.headless=true'
+    }
+    // for jdk8 to avoid the R.java errors
+    if (JavaVersion.current().isJava8Compatible()){
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+
+}
+
+
+/*
+ * subprojects refers to all the modules under the root build script file
+ */
+subprojects {
+
+    project.plugins.whenPluginAdded { plugin ->
+        // see: http://tools.android.com/tech-docs/new-build-system/tips
+        if ('com.android.build.gradle.AppPlugin'.equals(plugin.class.name) ||
+                'com.android.build.gradle.LibraryPlugin'.equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = !executingOnCI
+        }
+        if ('com.android.build.gradle.AppPlugin'.equals(plugin.class.name)){
+            // apply plugin: 'genymotion'
+
+            //genymotion configuration block goes here
+        }
+
+        if ('com.android.build.gradle.AppPlugin'.equals(plugin.class.name) ||
+                'com.android.build.gradle.LibraryPlugin'.equals(plugin.class.name)){
+            if(executingOnCI){
+                //our code qa tasks go here as we do not need them for all
+                // build runs but only to run them once a day, hence executing
+                // them on the CI server
+            }
+        }
+    }
+}

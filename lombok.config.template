@@ -1,0 +1,4 @@
+# android settting
+lombok.anyConstructor.suppressConstructorProperties = true
+# requires findbugs on classpath
+lombok.extern.findbugs.addSuppressFBWarnings = true
