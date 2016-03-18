@@ -1,0 +1,578 @@
+/*
+ * Copyright (C) 2016 Fred Grott(aka shareme GrottWorkShop)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under License.
+ */
+// gradle tip: G-Strings(double quotes) and groovy arrays are very useful in
+//             managing dependencies
+ext{
+
+
+
+    /*
+       Android Support Libraries, set of classes and compat stuff to ease OS fragmentation
+       by giving some easy routes to use newer apis on older devices.
+     */
+    androidSupportVersion = '23.2.1'
+
+    // all the compile dep configuration
+    // note: AppCompat automatically pulls in support-v4, animated-vector-drawable,
+    //       and support-vector-drawable
+    androidSupportDependencies = [
+            animatedVectorDrawable:"com.android.support:animated-vector-drawable:$androidSupportVersion",
+            appCompat: "com.android.support:appcompat-v7:$androidSupportVersion",
+            cardView: "com.android.support:cardview-v7:$androidSupportVersion",
+            customTabs: "com.android.support:customtabs:$androidSupportVersion",
+            design: "com.android.support:design:$androidSupportVersion",
+            gridLayout: "com.android.support:gridlayout-v7:$androidSupportVersion",
+            leanBack: "com.android.support:leanback-v17:$androidSupportVersion",
+            mediaRouter: "com.android.support:mediarouter-v7:$androidSupportVersion",
+            multidex: "com.android.support:multidex:$androidSupportVersion",
+            multidexInstrumentation: "com.android.support:multidex-instrumentation:$androidSupportVersion",
+            palette: "com.android.support:palette-v7:$androidSupportVersion",
+            percent: "com.android.support:percent:$androidSupportVersion",
+            prefeerenceLeanback: "com.android.support:preference-leanback-v17:$androidSupportVersion",
+            preference: "com.android.support:preference-v7:$androidSupportVersion",
+            preferenceFourteen: "com.android.support:preference-v14:$androidSupportVersion",
+            recommendation:"com.android.support:recommendation:$androidSupportVersion",
+            recyclerView: "com.android.support:recyclerview-v7:$androidSupportVersion",
+            supportAnnotations: "com.android.support:support-annotations:$androidSupportVersion",
+            supportFour: "com.android.support:support-v4:$androidSupportVersion",
+            supportThirteen: "com.android.support:support-v13:$androidSupportVersion",
+            supportVectorDrawable:"com.android.support:support-vector-drawable:$androidSupportVersion"
+
+    ]
+
+    /*
+      Espresso is the main test-kit set of apis for instrumented testing on android devices and
+      emulators.
+
+      UIAutomator is the new way of regression testing for api 18 and higher instead of
+      using Cucumber.
+
+      JankTestHelper is to assist in preventing flakey tests for use on api 23 and higher
+     */
+    espressoVersion = '2.2.2'
+    espressoRulesVersion = '0.5'
+    espressoRunnerVersion= '0.5'
+    //is 18 or higher
+    uiautomatorVersion = '2.1.2'
+    //is 23 or higher
+    janktesthelperVersion = '1.0.1'
+
+
+    //Note: espressoContrib pulls these as deps:
+    //               android.support design 23.1.1
+    //               android.support recyclerview-v7 23.1.1
+    //               android.support support-v4 23.1.1
+    //
+    //      espressoWeb pulls these deps:
+    //                android.support support annotations 23.1.1
+    //
+    //    thus when those things are used have to use the resolution strategy to
+    //    force to resolve deps to the newer versions att the module build script level
+    androidSupportTestDependencies = [
+
+            espressoContrib:"com.android.support.test.espresso:espresso-contrib:$espressoVersion",
+            espressoCore:"com.android.support.test.espresso:espresso-core:$espressoVersion",
+            espressoIdlingResource:"com.android.support.test.espresso:espresso-idling-resource:$espressoVersion",
+            espressoIntents:"com.android.support.test.espresso:espresso-intents:$espressoVersion",
+            espressoWeb:"com.android.support.test.espresso:espresso-web:$espressoVersion",
+            espressoRules:"com.android.support.test:rules:$espressoRulesVersion",
+            espressoRunner:"com.android.support.test:runner:$espressoRunnerVersion",
+            uiautomator:"com.android.support.test:uiautomator:$uiautomatorVersion",
+            janktesthelper:"com.android.support.test.janktesthelper:$janktesthelperVersion"
+
+    ]
+
+    /*
+      Databinding is the new way to keep track of the view-model states, update them, etc on
+      views.
+     */
+    databindingVersion = '1.1'
+
+    // databinding libs are now enabled via a gradle plugin
+    // note: library pulls support-v4 21.0.3 and thus that has to be over-ridden
+    //       via the force resolution strategy at the module gradle script level
+    androidDatabindingDependencies = [
+
+            databindingAdapters: "com.android.databinding:adapters:$databindingVersion",
+            databindingLibraries:"com.android.databinding:library:$databindingVersion"
+
+    ]
+
+    /*
+      Play Services is a set of distinct libraries that interface with Google Managed Services(GMS)
+     */
+    gmsPlayServicesVersion = '8.4.0'
+
+    gmsPlayServicesDependencies = [
+            playservicesCoreAll:"com.google.android.gms:play-services:$gmsPlayServicesVersion",
+            playservicesads:"com.google.android.gms:play-services-ads:$gmsPlayServicesVersion",
+            playservicesallwear:"com.google.android.gms:play-services-all-wear:$gmsPlayServicesVersion",
+            playservicesanalytics:"com.google.android.gms:play-services-analytics:$gmsPlayServicesVersion",
+            playservicesappindexing:"com.google.android.gms:play-servicces-appindexing:$gmsPlayServicesVersion",
+            playservicesappinvite:"com.google.android.gms:play-servicces-appinvite:$gmsPlayServicesVersion",
+            playservicesappstate:"com.google.android.gms:play-services-appstate:$gmsPlayServicesVersion",
+            playservicesauth:"com.google.android.gms:play-services-auth:$gmsPlayServicesVersion",
+            playservicesbase:"com.google.android.gms:play-services-base:$gmsPlayServicesVersion",
+            playservicesbasement:"com.google.android.gms:play-services-basement:$gmsPlayServicesVersion",
+            playservicescast:"com.google.android.gms:play-services-cast:$gmsPlayServicesVersion",
+            playservicesdrive:"com.google.android.gms:play-services-drive:$gmsPlayServicesVersion",
+            playservicesfitness:"com.google.android.gms:play-services-fitness:$gmsPlayServicesVersion",
+            playservicesgames:"com.google.android.gms:play_services-games:$gmsPlayServicesVersion",
+            playservicesgcm:"com.google.android.gms:play-services-gcm:$gmsPlayServicesVersion",
+            playservicesidentify:"com.google.android.gms:play-services-identify:$gmsPlayServicesVersion",
+            playserviceslocation:"com.google.android.gws:play-services-location:$gmsPlayServicesVersion",
+            playservicesmaps:"com.google.android.gws:play-services-maps:$gmsPlayServicesVersion",
+            playservicesmeasurement:"com.google.android.gws:play-services-measurement:$gmsPlayServicesVersion",
+            playservicesnearby:"com.google.android.gws:play-services-nearby:$gmsPlayServicesVersion",
+            playservicespanorama:"com.google.android.gws:play-services-panorama:$gmsPlayServicesVersion",
+            playservicesplus:"com.google.android.gws:play-services-plus:$gmsPlayServicesVersion",
+            playservicessafetynet:"com.google.android.gws:play-services-safetynet:$gmsPlayServicesVersion",
+            playservicesvision:"com.google.android.gws:play-services-vision:$gmsPlayServicesVersion",
+            playserviceswallet:"com.google.android.gws:play-services-wallet:$gmsPlayServicesVersion",
+            playserviceswearable:"com.google.android.gws:play-servicces-wearable:$gmsPlayServicesVersion"
+    ]
+
+    supportwearableVersion = '1.3.0'
+
+    // Note: pulls
+    //           recyclerview-v7 22.0.0
+    //           support-v4 22.0.0
+    //  thus have to force resolution strategy at module build script level to
+    //  get the right newer version
+    supportWearableDependencies = [
+            supportwearable:"com.google.android.support:wearable:$supportwearableVersion"
+    ]
+
+    /*
+      The Junit associated TDD dependencies such as Junit, Mockito, and PowerMock.
+      Network mocking libs are listed separate down below under wiremock
+
+      Junit
+      Mockito
+      PowerMock
+      Truth  easier and more useful assert library use in place of assertj in jvm testing
+     */
+    junitVersion = '4.12'
+    mockitoVersion = '1.10.19'
+    powermockjunit4Version = '1.6.3'
+    powermockmockitoVersion = '1.6.3'
+    truthVersion = '0.28'
+
+    tddDependencies = [
+            junit:"junit:junit:$junitVersion",
+            truth:"com.google.truth:truth:$truthVersion",
+            mockito:"org.mockito:mockito-all:$mockitoVersion",
+            powermockMockito:"org.powermock:powermock-api-mockito:$powermockmockitoVersion",
+            powermockJunit:"org.powermock:powermock-module-junit4:$powermockjunit4Version"
+    ]
+
+    /*
+       Cucumber allows regression testing of user stories and we use it until we have api 18 or higher
+                as the min target and than we make full use of UIAutomator
+     */
+    cucumberVersion = '1.2.4'
+    cucumberJvmdepsVersion = '1.0.3'
+
+    cucumberDependencies = [
+            cucumberAndroid:"info.cukes:cucumber-android:$cucumberVersion",
+            cucumberPicocontainer:"info.cikes:cucumber-picocontainer:$cucumberVersion",
+            cucumberJvmdeps:"info.cukes:cucumber-jvm-deps:$cucumberJvmdepsVersion"
+    ]
+
+    /*
+       SpoonClient I use a different spoon gradle plugin that is more up-to-date and thus have to use
+                   a spoon client that matches the spoon lib dependency of that plugin
+       GWSDroidInsUtil is a library that eases the Instrumented Test set-up boilerplate
+       AssertJ Android Libs  libraries to support assertj asserts of android specific views and
+                             widgets during testing. When we have a Google Truth Android specific
+                             library for views and widgets we make the switch to using Truth instead
+                             of assertj for instrumented testing.
+     */
+    spoonClientVersion = '1.3.1'
+    gwsdroidinsutilVersion = '1.0.0.7'
+    assertjVersion = '1.1.0'
+
+    // assertj-android pulls:
+    //        support-annotations 22.2.1
+    // assertj-appcompat pulls:
+    //        appcompat-v7 22.2.1
+    // assertj-cardview pulls
+    //        cardview-v7 22.2.1
+    // assertj-design pulls
+    //          design 22.2.1
+    // assertj-mediarouter pulls
+    //      mediarouter-v7 22.2.1
+    // assertj-palette pulls
+    //      palette-v7 22.2.1
+    // assertj-playservices pulls
+    //     playservices 7.5.0
+    // assertj-recyclerview pulls
+    //     recyclerview-v7 22.2.1
+    // assertj-androidsupportv4 pulls
+    //     support-v4 22.2.1
+    // thus need to do an exclude in dependencies declaration when used so that dep resolution
+    //picks up the newer dep instead
+    instrumentedDependencies = [
+            spoonClient:"com.squareup.spoon:spoon-client:$spoonClientVersion",
+            gwsdroidinsutil:"com.github.shareme:GWSDroidInsUtil:$gwsdroidinsutilVersion@aar",
+            assertjAndroid:"com.squareup.assertj:assertj-android:$assertjVersion",
+            assertjSupportFour:"com.squareup.assertj:assertj-android-support-v4:$assertjVersion",
+            assertjPlayServices:"com.squareup.assertj:assertj-android-play-services:$assertjVersion",
+            assertjAppCompat:"com.squareup.assertj:assertj-android-appcompat-v7:$assertjVersion",
+            assertjDesign:"com.squareup.assertj:assertj-android-design:$assertjVersion",
+            assertjGridLayout:"com.squareup.assertj:assertj-android-gridlayout-v7:$assertjVersion",
+            assertjMediarouter:"com.squareup.assertj:assertj-android-mediarouter-v7:$assertjVersion",
+            assertjPalette:"com.squareup.assertj:assertj-android-palette-v7:$assertjVersion",
+            assertjRecycler:"com.squareup.assertj:assertj-android-recyclerview-v7:$assertjVersion",
+            assertjCard:"com.squareup.assertj:assertj-android-cardview-v7:$assertjVersion"
+
+
+    ]
+
+    /*
+      The injectors I use are:
+             Butterknife is used to inject views
+             Dagger2
+             AutoParcel is an android port of AutoValue and is  used to annotate Models to
+                        maintain state using the Parcelable machinery
+             Bundler is for maintaining states of activities and fragments using the bundle
+                     and Parcelable machinery
+     */
+    butterknifeVersion = '7.0.1'
+    daggerVersion = '2.0.2'
+    javaxinjectionVersion = '1'
+    javaxannotationVersion = '1.0'
+    autoparcelVersion = '0.3.1'
+    bundlerVersion = '0.1.1'
+
+    injectDependencies = [
+            //compile
+            auotparcel:"com.github.frankiesardo:auto-parcel:$autoparcelVersion",
+            //apt
+            autoparcelProcessor:"com.github.frankiesardo:auto-parcel-processor:$autoparcelVersion",
+            butterknife:"com.jakewharton:butterknife:$butterknifeVersion",
+            //compile
+            dagger:"com.google.dagger:dagger:$daggerVersion",
+            //apt
+            daggerCompiler:"com.google.dagger:dagger-compiler:$daggerVersion",
+            //apt
+            daggerProducers:"com.google.dagger:dagger-producers:$daggerVersion",
+            //compile
+            javaxInject:"javax.inject:javax.inject:$javaxinjectionVersion",
+            //provided
+            javaxAnnotation:"javax.annotation:jsr250-api:$javaxannotationVersion",
+            //apt
+            bundlerCompiler:"in.workarounds.bundler:bundler-compiler:$bundlerVersion",
+            bundlerAnnotations:"in.workarounds.bundler:blunder-annotations:$bundlerVersion",
+            bundlerParceler:"in.workarounds.bundler:bundler-parceler:$bundlerVersion"
+
+
+    ]
+
+
+    /*
+       Lombok
+
+       Remember that to get correct javadocs one has to delombok task using the lombok jar
+       in the buildsystem subfolder as we only use the delombok ant task and do not want the
+       other classes duplicated in the compile dependency configuration
+     */
+    lombokVersion = '1.16.6'
+
+
+    lombokDependencies = [
+            //provided and apt both
+            lombok:"org.projectlombok:lombok:$lombokVersion"
+    ]
+
+    /*
+       Kotlin is a library
+
+       Anko is a library
+
+       We have to match the Kotlin version with Anko and Anok is always about one version
+       behind on its kotlin Dependency.
+
+
+     */
+    kotlinVersion = '1.0.0-beta-3595'
+    ankoVersion = '0.8'
+
+    kotlinDependencies = [
+            kotlinStdlib:"org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+            ankoSdk15:"org.jetbrains.anko:anko-sdk15:$ankoVersion",
+            ankoSupportFour:"org.jetbrains.anko:anko-support-v4:$ankoVersion",
+            ankoAppCompat:"org.jetbrains.anko:anko-appcompat-v7:$ankoVersion"
+    ]
+
+    /*
+       Picasso is an image downloading and caching library
+       OkHttpDownloader is an okhttp3 library for Picasso to use Okhttp3
+     */
+    picassoVersion = '2.5.2'
+    okhttpDownloaderVersion = '1.0.1'
+
+    imageDependencies = [
+            picasso:"com.squareup.picasso:picasso:$picassoVersion",
+            okhttpDownloader:"com.jakewharton.picasso:picasso2-okhttp3-downloader:$okhttpDownloaderVersion"
+    ]
+
+    /*
+      DBInspector is a library that provides a way to inspect SQLite contents during debugging
+                  without having to pull the database from a rooted device. Only has support for
+                  CouchBase in addition to SQLite.
+     */
+    dbinspectorVersion = '3.2.1'
+
+    databaseDebugDependencies = [
+            //debugCompile
+            dbinspector:"im.dino:dbinspector:$dbinspectorVersion@aar"
+    ]
+
+    /*
+       LeakCanary is a library to assist in the tracking down and debugging of memory leaks
+                  by displaying memory leaks in the debug build logs
+
+
+        GWSDroidViewServer only used on non-flavored app modules as it enables displaying the
+                          view hierarchy in the view hierarchy tool and I use a special class to
+                          get the same functionality in flavored builds.
+        GWSWakeUp library to wake up emulator or device once app is pushed to the device during
+                  testing
+        Scalpel   debugging library to uncover layers of the UI, the gradle view-inspector
+                  includes the features of scalpel and gradle probe plugin
+        Madge     pixel grid overlays for debugging assets are drawing at their native resolution
+
+     */
+    leakCanaryVersion = '1.3.1'
+    gwsdroidviewserverVersion = '1.0.0.1'
+    gwswakeupVersion = '1.0.0.1'
+    scalpelVersion = '1.1.2'
+    madgeVersion = '1.1.3'
+
+    appDebugDependencies = [
+            leakCanaryDebugCompile:"com.squareup.leakcanary:leakcanary-android:$leakCanaryVersion",
+            leakCanaryReleaseCompile:"com.squareup.leakcanary:leakcanary-android-no-op:$leakCanaryVersion",
+            //debugCompile, gets BuildConfig wrapped as far as method calls
+            gwsdroidviewserver:"com.github.shareme:GWSDroidViewServer:$gwsdroidviewserverVersion@aar",
+            //debugCompile, gets BuildConfig wrapped as far as method calls
+            gwswakeup:"com.github.shareme:GWSWakeUp:$gwswakeupVersion@aar",
+            //debugCompile
+            scalpel:"com.jakewharton.scalpel:scalpel:$scalpelVersion",
+            //debugCompile
+            madge: "com.jakewharton.madge:madge:$madgeVersion"
+
+    ]
+
+    /*
+       Wiremock is a network mocking library
+     */
+    wiremockVersion = '1.58'
+
+    networkMockDependencies = [
+            //androidTestCompile
+            wiremock:"com.github.tomakehurst:wiremock:$wiremockVersion:standalone"
+    ]
+
+    /*
+       Otto is a Guava based event bus without the huger amount of Guava methods with
+            emphasis on android support. Typically one would use it to set up a command
+            type structure and communication api for MVc, MVP, etc.
+
+       GWSOttoUtils my otto utility classes library to reduce the boilerplate setup
+     */
+    ottoVerion = '1.3.8'
+    gwsottoutilsVersion = '1.0.0.1'
+
+    eventbusDependencies = [
+            otto:"com.squareup:otto:$ottoVerion",
+            gwsottoutils:"com.github.shareme:GWSOttoUtils:$gwsottoutilsVersion"
+    ]
+
+    /*
+      Timber a log wrapper that ensures that debug stuff does not get log into production and lint rules
+      to ensure proper usage
+
+       I am one of the few that customizes libraries to use this log wrapper as I want no debug logs in
+            my production apps.
+       */
+    timberVersion = '4.1.1'
+
+    logDependencies = [
+            timber:"com.jakewharton.timber:timber:$timberVersion"
+    ]
+
+    /*
+       Retrofit Typesafe Http client for android and a Moshi converter
+
+       Okhttp An HTTP and HTTP/2 client and MockWebServer to test
+
+       Moshi A modern JSON library
+
+
+     */
+    retrofitVersion = '2.0.0-beta4'
+    okhttpVerison = '3.2.0'
+    moshiVersion = '1.1.0'
+
+    retrofitDeps = [
+            moshi:"com.squareup.moshi:moshi:$moshiVersion",
+            retrofit:"com.squareup.retrofit:retrofit:$retrofitVersion",
+            //testCompile
+            retrofitmock:"com.squareup.retrofit:retrofit-mock:$retrofitVersion",
+            retrofitmoshi:"com.squareup.retrofit2:converter-moshi:$retrofitVersion",
+            retrofitrxjava:"com.squareup.retrofit2:adapter-rxjava:$retrofitVersion",
+            okhttp:"com.squareup.okhttp3:okhttp:$okhttpVerison",
+            okhttplogging:"com.squareup.okhttp3:logging-interceptor:$okhttpVerison",
+            //testCompile
+            okhttpmock:"com.squareup.okhttp3:mockwebserver:$okhttpVerison"
+
+    ]
+
+    /*
+      RXJava is the React Native for java libraries and the Android specific RxJava libraries
+
+      RxJava Core React Native
+      RxAndroid Android RxJava specific core
+      RxBinding is the binding to view library
+      RxLifecycle is the Android lifecycle rxJava library
+      SQLBrite RxJava for Android SQLite
+      ReactiveLocation RxJava library for Android Location
+      RxPreferences RxJava library for Android Preferences
+      RxFit RxJava library for Android Fitness
+     */
+    rxVersion = '1.1.1'
+    rxAndroidVersion = '1.1.0'
+    rxbindingVersion = '0.4.0'
+    rxlifecycleVersion = '0.3.0'
+    reactivelocationVersion = '0.8'
+    rxpreferencesVersion = '1.0.0'
+
+    rxDependencies = [
+            rxandroid:"io.reactivex:rxandroid:$rxAndroidVersion",
+            rxjava:"io.reactivex:rxjava:$rxVersion",
+            rxbinding:"com.jakewharton.rxbinding:rxbinding:$rxbindingVersion",
+            rxbindingSuportfour:"com.jakewharton.rxbinding:rxbinding-support-v4:$rxbindingVersion",
+            rxbindingAppCompat:"com.jakewharton.rxbinding:rxbinding-appcompatt-v7:$rxbindingVersion",
+            rxbindingDesign:"com.jakewharton.rxbinding:rxbinding-design:$rxbindingVersion",
+            rxbindingrecycler:"com.jakewharton.rxbinding:rxbinding-recyclerview-v7:$rxbindingVersion",
+            rxlifecycle:"com.trello:rxlifecycle:$rxlifecycleVersion",
+            rxlifecycleComponents:"com.trello:rxlifecycle-components:$rxlifecycleVersion",
+
+            reactivelocation:"pl.charmas.android:android-reactivve-location:$reactivelocationVersion@aar",
+            rxpreferences:"com.f2prateek.rx.preferences:rx-preferences:$rxpreferencesVersion"
+
+    ]
+
+
+    //sqlite wrapper
+    sqlbriteversion = '0.4.0'
+
+    sqlitewrapperDependencies = [
+            sqlbrite:"com.squareup.sqlbrite:sqlbrite:$sqlbriteversion"
+    ]
+
+
+    /*
+      3rd Party Libs
+      AndroidTransformer Manages object transformations from POJO to a Model and to the
+                         Activity or fragment class
+
+      needs this in the module build script:
+             packagingOptions {
+                    exclude 'META-INF/services/javax.annotation.processing.Processor'
+                }
+
+      GWSAndroidUuid  Uuid lib
+      GWSColours Lib ie material colors and color utility classes
+      GWSEasing animation utilities
+      GWSEula Eula classes to display a customized eula during first start of an application
+      GWSIndiaInk custom font loader
+      GWSReveal Reveal compat
+      GWSRippledecoview Ripple compat
+      GWSSpannable Spannable utility classes
+      GWSSystemUi compat
+      Wizard a set of classes to create wizards
+      Decor enables adding of extra decorators to a layout without having to extend or
+            customize classes
+      ThreadDecoratedView enable creating of a view interface from MVP, MVC, etc to make it
+                          easier to post ot the Ui Thread with no headaches
+      ProcessPhoenix allows restarting the app to reset states in a debug build to change
+                      from staging to production
+      Telescope bug report capturing within the app
+      ThreeTen-ABP is the back port of jsr-310 which is the date and calendar replacement
+
+
+      *Note: This is not a complete list of every 3rd party lib I use as I have about 150+
+             of my own soft forks and other libs form other code authors that I use. But this is
+             the most common ones that I tend to use in every project as part of my customized
+             android development work-flow and android application development best practices.
+
+     */
+    androidtransformerVersion = '1.2'
+    coordinatorVersion = '1.1.5'
+    gwsandroiduuidVersion = '1.0.0.1'
+    gwscoloursVersion = '1.0.0.1'
+    gwseasingVersion = '1.0.0.1'
+    gwseulaVersion = '1.0.0.1'
+    gwsindiainkVersion = '1.0.0.1'
+    gwsrevealVersion = '1.0.0.1'
+    gwsrippledecoviewVersion = '1.0.0.1'
+    gwsspannableVersion = '1.0.0.1'
+    gwssystemuiVersion = '1.0.0.1'
+    gwszdepthshadowVersion = '1.0.0.1'
+    telescopeVersion = '2.0.0'
+    wizardVersion = '1.1.1'
+    decorVersion = '2.4'
+    processphoenixVersion = '1.0.2'
+    threaddecoratedviewVersion = '1.5.2'
+
+    threetenabpVersion = '1.0.3'
+
+    thirdPartyDependencies = [
+            //compile
+            androidtransformer: "com.mobandme:android-transformer:$androidtransformerVersion",
+            //apt
+            androidtransformerCompiler:"com.mobandme:android-transformer-compiler:$androidtransformerVersion",
+            //compile
+            coordinator:"me.panavtec:coordinator:$coordinatorVersion",
+            //apt
+            coordinatorCompiler:"me.panavtec:coordinator-compiler:$coordinatorVersion",
+            gwsandroiduuid:"com.github.shareme:GWSAndroidUUID:$gwsandroiduuidVersion@aar",
+            gwscolours:"com.github.shareme:GWSColours:$gwscoloursVersion@aar",
+            gwseasing:"com.github.shareme:GWSEasing:$gwseasingVersion@aar",
+            gwseula:"com.github.shareme:GWSEula:$gwseulaVersion@aar",
+            gwsindiaink:"com.github.shareme:GWSIndiaInk:$gwsindiainkVersion@aar",
+            gwsreveal:"com.github.shareme:GWSReveal:$gwsrevealVersion@aar",
+            gwsrippledecoview:"com.github.shareme:GWSRippleDecoView:$gwsrippledecoviewVersion@aar",
+            gwsspannable:"com.github.shareme:GWSSpannable:$gwsspannableVersion@aar",
+            gwssystemui:"com.github.shareme:GWSSystemUI:$gwssystemuiVersion@aar",
+            gwszdepthshadow:"com.github.shareme:GWSZDepthShadow:$gwszdepthshadowVersion@aar",
+            telescope:"com.mattpreciious.telescope:telescope:$telescopeVersion@aar",
+            wizard:"me.panavtec:wizard:$wizardVersion",
+            decor:"com.mounacheikhna:decor:$decorVersion",
+            decorators:"com.mounacheikhna:decorators:$decorVersion",
+            processphoenexi:"com.jakewharton:process-phoenix:$processphoenixVersion",
+            //provided
+            threaddecoratedviewCompiler:"me.panavtec:threaddecoratedview-compiler:$threaddecoratedviewVersion",
+            //compile
+            threaddecoratedview:"me.panavtec:threaddecoratedview-common:$threaddecoratedviewVersion",
+            threetenabp:"com.jakewharton.threetenabp:thretenabp:$threetenabpVersion"
+    ]
+
+
+
+
+
+
+}
