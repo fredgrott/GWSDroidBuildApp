@@ -249,6 +249,7 @@ ext{
                      and Parcelable machinery
      */
     butterknifeVersion = '7.0.1'
+    //dagger 2.1 now in snapshot does not require the javaxinjext dep
     daggerVersion = '2.0.2'
     javaxinjectionVersion = '1'
     javaxannotationVersion = '1.0'

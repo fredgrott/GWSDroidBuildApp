@@ -1,21 +1,181 @@
+/*
+ * Copyright (C) 2016 Fred Grott(aka shareme GrottWorkShop)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under License.
+ */
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+// gradle best practices tip: we can apply gradle snippets as plugins
+apply from: 'buildsystem/bootstrap.gradle'
+apply from: 'buildsystem/mydependencies.gradle'
+
+// required to import the GRGit lib we included on the gradle plugin classpath
+// so that we can use JGit in a cross-platform way to do git tags
+import org.ajoberstar.grgit.*
+
+
+
+
 
 buildscript {
     repositories {
         jcenter()
+        // we use  one or two plugins that are snapshots
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.0-alpha3'
+
+        //uncomment classpath for databinding and do not forget to add plugin
+        //declaration to app module, ie apply plugin: 'com.android.databinding'
+        //classpath "com.android.databinding:dataBinder:1.1"
+
+        // GrGit wrapper of JGit for cross-platform git stuff
+        // we can only call it from this build script
+        classpath 'org.ajoberstar:grgit:1.4.1'
+
+        //other 3rd party gradle plugins
+
+
+        /*
+        Godot gradle plugin enables collection of build time stats to allow me to fine
+        tune the gradle builds for speedy performance
+        */
+        classpath 'de.hannesstruss:godot:0.3'
+
+
+        /*
+        Hugo gradle plugin enables a @DebugLog annotation so that one can see method call
+        args and return values in the debug log
+        */
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+
+        /*
+           Felix's better spoon plugin as its slightly more up-to-date
+         */
+        classpath 'de.felixschulze.gradle:gradle-spoon-plugin:2.7.3'
+
+        /*
+           Advance Build Version is a gradle plugin to version application build artifacts
+         */
+        classpath 'org.moallemi.gradle.advanced-build-version:gradle-plugin:1.5.3'
+
+        /*
+           Android Maven Gradle Plugin is used for both jitpack or jfrog generation of
+                                       maven artifacts to allow deployment of libraries for
+                                       upload to jitpack or jfrog or maven central.
+         */
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+
+
+        /*
+           DexCount Gradle plugin is to compute and display dex counts during the debug builds
+         */
+        classpath "com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.4.2"
+
+
+        /*
+           JacocoEveryWhere is a gradle plugin that enables jacoco reports that combine both
+                            androidTest and Test for full Jacoco testing report coverage
+         */
+        classpath 'com.trickyandroid:jacoco-everywhere:0.2.1'
+
+        /*
+           AndroidApt Gradle Plugin is required for some libraries such as dagger2, butterknife8, etc
+         */
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+
+        /*
+           KotlinGradle Plugin is for Kotlin and has to match the Anko Kotlin dep version
+         */
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.0-beta-3595'
+
+        /*
+           Wire Gradle Plugin is used to enable usage of the wire library for protocol buffers
+         */
+        classpath "com.bendb.gradle:wire-gradle-plugin:1.6.1-SNAPSHOT"
+
+        /*
+           FrodoPlugin is a gradle plugin to allow rxjava debugging
+         */
+        classpath "com.fernandocejas.frodo:frodo-plugin:0.8.2"
+
+        /*
+           View Inspector Gradle Plugin allows displaying of layout-view traversals(probe), scalpel layers,
+                                        and logs lifecycle events
+         */
+        classpath 'com.github.xfumihiro.view-inspector:view-inspector-plugin:0.2.0'
+
+        /*
+           AndroidDevMetrics Plugin is a gradle plugin to allow to collect performance metrics
+                                    of the application including lifecycle events, dagger object graph,
+                                    etc.
+         */
+        classpath 'com.frogermcs.androiddevmetrics:androiddevmetrics-plugin:0.3.1'
+
+        /*
+           RetroLambda Gradle Plugin allows me to use lambdas
+
+           Yes, that means committing to using retrolambda and lombok in both app and library modules
+         */
+        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+        // Exclude the lombok version that the android plugin depends on.
+        configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+
+
+
+
+
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
 
+// we inherit the repository settings from the bootstrap.gradle snippet
 allprojects {
-    repositories {
-        jcenter()
+
+    //sets our global variables for all project module build scripts
+    ext{
+        //Configure stuff
+        ourReportsDir = '${project.buildDir}/reports'
+
+
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+
+
+        // has changed as of android gradle plugin 2alpha5
+        androidCompileSdkVersion = 'Google Inc.:Google APIs:23'
+        androidBuildToolsVersion = '24.0.0 rc1'
+        androidMinSdkVersion = 16
+        androidTargetSdkVersion = 23
+
+        /*
+        Compute Date and time for reports, right from
+        Date example from Groovy JDK
+        */
+        buildTime = new Date().format("yyyy-MM-dd'T'HH:mm", TimeZone.getTimeZone("CST"))
+
+
+        //git sha hash stuff and time, cross-platform of course
+        //noinspection GrDeprecatedAPIUsage
+        repo = Grgit.open(rootProject.file('.'))
+        //String
+        gitSha = '${repo.head().abbreviatedId}'
+        // long
+        gitDate = '${repo.head().date}'
+
+
     }
+
 }
 
 task clean(type: Delete) {
