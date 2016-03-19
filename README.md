@@ -17,7 +17,9 @@ CAUTION: Many Android Developers are in the opinion that one can do pure POJOs a
          towards such things and looks at best practices differently.
 
 Over-all this set of build scripts implements an INSTRUMENTED-TESTED TDD way fo development as opposed
-to a Robolectric Mocked-JVM TDD way for android application development.
+to a Robolectric Mocked-JVM TDD way for android application development. Also, the prevailing thing is
+that we separate android OS framework stuff in isolation testing wise so that we can mock the android OS
+framework stuff and the network stuff.
 
 1. In OOP the POJO Models of the big M are implemented as non-pure POJO's with extending the Android OS
    Parceable class as that machinery for maintaining state upon device orientation/configuration change is
