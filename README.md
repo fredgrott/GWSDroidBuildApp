@@ -109,6 +109,144 @@ applicationVariants.all {variant ->
 
 that gives an N debug build and with the bc build a 15 api build.
 
+## Wire Protocol Buffer SetUp
+
+Protobuffer defs go in the src/main/proto source location when using the wire gradle plugin in the app
+modules.
+
+## Timber Set Up
+
+I use a log wrapper in my libraries and applications called Timber created by Jake Wharton. Timber setup:
+
+in the application extended class:
+
+```groovy
+public class ExampleApp extends Application {
+  @Override public void onCreate() {
+    super.onCreate();
+
+    if (BuildConfig.DEBUG) {
+      Timber.plant(new DebugTree());
+    } else {
+      Timber.plant(new CrashReportingTree());
+    }
+  }
+
+  /** A tree which logs important information for crash reporting. */
+  private static class CrashReportingTree extends Timber.Tree {
+    @Override protected void log(int priority, String tag, String message, Throwable t) {
+      if (priority == Log.VERBOSE || priority == Log.DEBUG) {
+        return;
+      }
+
+      FakeCrashLibrary.log(priority, tag, message);
+
+      if (t != null) {
+        if (priority == Log.ERROR) {
+          FakeCrashLibrary.logError(t);
+        } else if (priority == Log.WARN) {
+          FakeCrashLibrary.logWarning(t);
+        }
+      }
+    }
+  }
+}
+
+
+```
+
+and the fake crash library class will be
+
+```groovy
+public final class FakeCrashLibrary {
+  public static void log(int priority, String tag, String message) {
+    // TODO add log entry to circular buffer.
+  }
+
+  public static void logWarning(Throwable t) {
+    // TODO report non-fatal warning.
+  }
+
+  public static void logError(Throwable t) {
+    // TODO report non-fatal error.
+  }
+
+  private FakeCrashLibrary() {
+    throw new AssertionError("No instances.");
+  }
+}
+
+```
+
+than read your crash library directions to modify the fake crash library class.
+
+## Hugo SetUp
+
+I use the Jake Wharton Hugo gradle plugin to enable annotation triggers in the app modules
+so that my method call logging is automated with just doing a DebugLog annotation of the
+method such as:
+
+```groovy
+@DebugLog
+public String getName(String first, String last) {
+  SystemClock.sleep(15); // Don't ever really do this!
+  return first + " " + last;
+}
+
+```
+
+no setup required other than marking the methods with the DebugLog annotation.
+
+## ViewInspector SetUp
+
+I use Fumihiro Xue's ViewInspector gradle plugin to enable inspection of views including
+lifecycle events, layers, etc. Because it combines probe and scalpel it does have a little
+amount of set-up so as to exclude packages in other libraries that might interfere with it.
+
+to exclude packages
+
+```groovy
+viewInspector {
+  excludePackages = ['android.widget.Space', 'com.squareup.leakcanary.internal']
+}
+
+```
+
+obviously, if packages need to be added you will get an error in the logcat output and know
+to add the offending package of the offending library.
+
+## Android Dev Metrics
+
+I use Miroslaw Stanek's Android Dev Metrics Gradle plugin as its better at showing lifecycle
+events than the lifecycle gradle plugin and also tracks dagger 2 metrics. It requires this setup
+in the extended application class;
+
+```groovy
+public class ExampleApplication extends Application {
+
+ @Override
+ public void onCreate() {
+     super.onCreate();
+     //Use it only in debug builds
+     if (BuildConfig.DEBUG) {
+         AndroidDevMetrics.initWith(this);
+     }
+  }
+ }
+
+```
+
+only shows metrics in the debug build.
+
+## DataInspector
+
+I use Fumihiro Xue's DataInspector gradle plugin to setup debugging SSQlite things such as editing preferences,
+editing databases, storage usage and logging of storage events in logcat.
+
+It shows the item menu for it in the tolbar on debug builds but other than applying the plugin
+requires no setup.
+
+
 # ChangeLog
 
 * March 2016, first alpha release with Jack and Jill toolchain not enabled
