@@ -153,7 +153,7 @@ allprojects {
 
 
         // has changed as of android gradle plugin 2alpha5
-        androidCompileSdkVersion = 'Google Inc.:Google APIs:23'
+        androidCompileSdkVersion = 23
         androidBuildToolsVersion = '24.0.0 rc1'
         androidMinSdkVersion = 16
         androidTargetSdkVersion = 23

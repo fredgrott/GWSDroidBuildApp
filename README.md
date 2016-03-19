@@ -76,6 +76,8 @@ codelabs:
 
 as those examples help me determine and modify some best practices to follow.
 
+![GWS Logo](/art/gws_github_header.png)
+
 [Fred Grott](https://gtihub.com/shareme/MyGithubProfile)
 
 I Believe that diversity of culture combined with launching their lives wins in Android Mobile Application

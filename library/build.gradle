@@ -1,15 +1,110 @@
+/*
+ * Copyright (C) 2016 Fred Grott(aka shareme GrottWorkShop)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under License.
+ */
+/*
+  NOTE: Not using lombok, kotlin, retrolambda or dagger
+ */
+
 apply plugin: 'com.android.library'
+apply plugin: 'de.hannesstruss.godot'
+apply plugin: 'com.github.dcendents.android-maven'
+
+/*
+  Maven meta-data for deployment to local and or jitpack
+
+  Its the one library artifact style, for multiple library modules obviously
+  change according to jitpack directions
+ */
+def libVersionCode = 1
+def libVersionName = "1.0.0.0"
+def siteUrl = 'https://github.com/shareme/GWSDroidBuildApp'
+def gitUrl = 'https://github.com/shareme/GWSDroidBuildApp.git'
+group = "com.github.shareme"
+version = libVersionName
+
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "24.0.0 rc1"
+    def globalConfiguration = rootProject.extensions.getByName("ext")
+
+    compileSdkVersion globalConfiguration.getAt("androidCompileSdkVersion")
+    buildToolsVersion globalConfiguration.getAt("androidBuildToolsVersion")
+
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion globalConfiguration.getAt("androidMinSdkVersion")
+        targetSdkVersion globalConfiguration.getAt("androidTargetSdkVersion")
+        versionCode libVersionCode
+        versionName libVersionName
+
     }
+
+    /*
+     Warning, multi-catch is not until android 4.4.2
+
+     Change to VERSION_1_8 if we need retrolambda
+     */
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+
+    aaptOptions {
+        noCompress 'txt'
+        ignoreAssetsPattern "!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
+    lintOptions {
+        quiet true
+        abortOnError false
+        ignoreWarnings true
+        xmlReport false
+        htmlReport true
+        lintConfig file("${project.rootDir}/config/quality/androidlint/lint.xml")
+        htmlOutput file("${rootProject.buildDir}/reports/lint/lint-results.html")
+        xmlOutput file("${rootProject.buildDir}/reports/lint/lint-results.xml")
+        disable 'InvalidPackage'            //Some libraries have issues with this.
+        disable 'OldTargetApi'              //Lint gives this warning but SDK 20 would be Android L Beta.
+        disable 'IconDensities'             //For testing purpose. This is safe to remove.
+        disable 'IconMissingDensityFolder'  //For testing purpose. This is safe to remove.
+
+    }
+
+
+    // Always show the result of every unit test, even if it passes.
+    testOptions{
+        reportDir = "$rootProject.ext.ourReportsDir/androidTests"
+
+        unitTests.all {
+            testLogging {
+                events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+                // to show it in the console
+                outputs.upToDateWhen { false }
+                showStandardStreams = true
+
+            }
+        }
+    }
+
+
+
     buildTypes {
         release {
             minifyEnabled false
@@ -18,8 +113,127 @@ android {
     }
 }
 
+// espresso has a support annotation dep that is usually out of synch
+// with rest of the support libs, thus we force resolve to the
+// more up-to-date one
+//
+// its the minimum that needs setting see the androidSupportDependenciees
+// comment block in mydependencies.gradle snippet in the buildsystem subfolder
+// for details on others that may need to be set.
+//noinspection GroovyAssignabilityCheck
+configurations.all{
+    resolutionStrategy.force 'com.android.support:support-annotations:23.2.1'
+
+}
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.2.1'
+    //noinspection GroovyAssignabilityCheck
+    testCompile rootProject.ext.tddDependencies.junit
+    //noinspection GroovyAssignabilityCheck
+    testCompile rootProject.ext.tddDependencies.mockito
+    //noinspection GroovyAssignabilityCheck
+    testCompile rootProject.ext.tddDependencies.powermockJunit
+    //noinspection GroovyAssignabilityCheck
+    testCompile rootProject.ext.tddDependencies.powermockMockito
+    //noinspection GroovyAssignabilityCheck
+    testCompile rootProject.ext.tddDependencies.truth
+
+
+    //noinspection GroovyAssignabilityCheck
+    androidTestCompile rootProject.ext.androidSupportTestDependencies.espressoRunner
+    //noinspection GroovyAssignabilityCheck
+    androidTestCompile rootProject.ext.androidSupportTestDependencies.espressoRules
+    //noinspection GroovyAssignabilityCheck
+    androidTestCompile rootProject.ext.androidSupportTestDependencies.espressoCore
+    androidTestCompile (rootProject.ext.androidSupportTestDependencies.espressoContrib){
+        exclude module: 'recyclerview-v7'
+        exclude module: 'support-v4'
+        exclude module: 'design'
+
+    }
+    androidTestCompile (rootProject.ext.instrumentedDependencies.assertjAndroid){
+        exclude group: 'com.android.support'
+    }
+    //noinspection GroovyAssignabilityCheck
+    compile rootProject.ext.androidSupportDependencies.appCompat
+    androidTestCompile (rootProject.ext.instrumentedDependencies.assertjAppCompat){
+        exclude group: 'com.android.support'
+
+    }
+    //noinspection GroovyAssignabilityCheck
+    compile rootProject.ext.logDependencies.timber
+
+}
+
+install {
+    repositories.mavenInstaller{
+        //noinspection GroovyAssignabilityCheck
+        pom {
+            //noinspection GroovyAssignabilityCheck
+            project {
+
+                //noinspection GroovyAssignabilityCheck
+                packaging 'aar'
+                //noinspection GroovyAssignabilityCheck
+                name 'GWSDroidBuildApp'
+                url siteUrl
+
+                //noinspection GroovyAssignabilityCheck
+                licenses {
+                    license{
+                        //noinspection GroovyAssignabilityCheck
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                //noinspection GroovyAssignabilityCheck
+                developers {
+                    developer {
+                        //noinspection GroovyAssignabilityCheck
+                        id 'shareme'
+                        //noinspection GroovyAssignabilityCheck
+                        name 'Fred Grott'
+                        //noinspection GroovyAssignabilityCheck
+                        email 'fred.grott@gmail.com'
+                    }
+                }
+                //noinspection GroovyAssignabilityCheck
+                scm {
+                    //noinspection GroovyAssignabilityCheck
+                    connection gitUrl
+                    //noinspection GroovyAssignabilityCheck
+                    developerConnection gitUrl
+                    //noinspection GroovyAssignabilityCheck
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar){
+    //noinspection GroovyAssignabilityCheck
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc){
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    //noinspection GroovyAssignabilityCheck
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc){
+    classifier = 'javadoc'
+    //noinspection GrUnresolvedAccess
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
