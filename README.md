@@ -62,6 +62,53 @@ For this particular set of build scripts, just clone the github repo and modify 
 Certain things used in these build scripts need further set-up than what the build scripts show so
 this is the section where that set-up is described.
 
+## Previews of Android Releases
+
+At times we have to test libraries and apps on Android Preview Releases and older production OS
+releases concurrently. The set-up to use these build scripts for that is:
+
+in the app module build script
+```groovy
+android{
+     compileSdkVersion 'android-N'
+     buildToolsVersion "24.0.0 rc1"
+
+     defaultConfig {
+          minSdkVersion 15
+          targetSdkVersion 'N'
+
+     }
+
+     buildTypes {
+        bc {
+            initWith(buildTypes.debug)
+            applicationIdSuffix '.bc'
+        }
+     }
+}
+//based on http://stackoverflow.com/a/27372806/115145
+applicationVariants.all {variant ->
+     if (variant.buildType.name=='bc'){
+         variant.outputs.each {output->
+           ouput.processManifest.doLast {
+             def manifestOutFile = output.processManifest.manifestOutputfile
+             def xml = new XmlParser().parse(manifestOutFile)
+             def usesSdk = xml.'uses-sdk'
+
+             usesSdk.replaceNode {
+                 'uses-sdk'('android:minSdkVersion':'15', 'android:targetSdkVersion':'15')
+             }
+             def fw = new FileWriter(manifestOutFile.toString())
+             new XmlNodePrinter(new PrintWriter(fw)).print(xml)
+           }
+         }
+     }
+}
+
+```
+
+that gives an N debug build and with the bc build a 15 api build.
+
 # ChangeLog
 
 * March 2016, first alpha release with Jack and Jill toolchain not enabled
